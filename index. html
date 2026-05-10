@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0d0f14">
+    <meta name="description" content="Pius - Application d'apprentissage des langues">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pius - Maitrisez les langues</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0d0f14;
+            color: #f0f2f8;
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+        .font-heading { font-family: 'Sora', sans-serif; }
+        .font-chinese { font-family: 'Noto Sans SC', sans-serif; }
+        .max-app { max-width: 480px; margin: 0 auto; }
+        .card { background: #161a23; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+        .card-sm { background: #161a23; border-radius: 12px; }
+        .btn-primary { background: #4f8ef7; color: white; border-radius: 12px; padding: 12px 24px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
+        .progress-bar { height: 4px; border-radius: 999px; background: #252b38; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #161a23; border-top: 1px solid #252b38; height: 60px; padding-bottom: env(safe-area-inset-bottom); z-index: 50; display: flex; justify-content: space-around; align-items: center; }
+        .pulse-ring { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(79, 142, 247, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(79, 142, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(79, 142, 247, 0); } }
+        .slide-up { animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .waveform-bar { display: inline-block; width: 3px; background: #34d399; border-radius: 2px; animation: wave 0.8s infinite; }
+        .waveform-bar:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .waveform-bar:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+        .waveform-bar:nth-child(3) { height: 12px; animation-delay: 0.2s; }
+        .waveform-bar:nth-child(4) { height: 14px; animation-delay: 0.3s; }
+        .waveform-bar:nth-child(5) { height: 6px; animation-delay: 0.4s; }
+        @keyframes wave { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.4); } }
+        .mic-pulse { animation: micPulse 1.2s infinite; }
+        @keyframes micPulse { 0% { box-shadow: 0 0 0 0 rgba(79, 142, 247, 0.6); } 70% { box-shadow: 0 0 0 20px rgba(79, 142, 247, 0); } 100% { box-shadow: 0 0 0 0 rgba(79, 142, 247, 0); } }
+        input, textarea { outline: none; }
+        input:focus, textarea:focus { border-color: #4f8ef7 !important; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0d0f14; }
+        ::-webkit-scrollbar-thumb { background: #252b38; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div id="app" class="max-app min-h-screen pb-16">
+        <!-- Rendered by JavaScript -->
+    </div>
+    <nav id="bottomNav" class="bottom-nav flex">
+        <div class="nav-tab flex flex-col items-center cursor-pointer" data-route="/">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Accueil</span>
+        </div>
+        <div class="nav-tab flex flex-col items-center cursor-pointer" data-route="/explorer">
+            <i data-lucide="compass" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Explorer</span>
+        </div>
+        <div class="nav-tab flex flex-col items-center cursor-pointer" data-route="/progression">
+            <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Progression</span>
+        </div>
+        <div class="nav-tab flex flex-col items-center cursor-pointer" data-route="/profil">
+            <i data-lucide="user" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Profil</span>
+        </div>
+    </nav>
+
+    <script>
+        // ==================== APPLICATION STATE ====================
+        const APP = {
+            currentRoute: '/',
+            userData: {
+                name: 'Apprenant',
+                interfaceLang: 'fr',
+                autoPlay: false,
+                defaultSpeed: 1,
+                completedLessons: [],
+                xp: 0,
+                streak: { current: 0, longest: 0, lastActiveDate: null },
+                exerciseResults: {},
+                badges: []
+            },
+            languages: ['french', 'english', 'spanish', 'chinese'],
+            currentLang: null,
+            currentCategory: null,
+            currentLesson: null,
+            currentExerciseIndex: 0,
+            exerciseXP: 0,
+            isSpeaking: false,
+            isListening: false,
+            speechSynth: window.speechSynthesis,
+            recognition: null
+        };
+
+        // ==================== LESSON DATA ====================
+        const LESSONS = {
+            french: {
+                name: 'Francais',
+                nativeName: 'Francais',
+                color: '#2563eb',
+                categories: {
+                    orthographe: {
+                        name: 'Orthographe',
+                        lessons: [
+                            { id: 'fr-orth-1', title: 'Les accents francais', level: 'debutant', content: { intro: 'Les accents en francais sont essentiels pour la prononciation et le sens des mots.', points: ['Accent aigu: uniquement sur le e', 'Accent grave: sur a, e, u', 'Accent circonflexe: sur toutes les voyelles', 'Le trema indique que deux voyelles se prononcent separement'], exemples: [{ phrase: 'eleve', trad: 'eleve (accent aigu)' }, { phrase: 'tres', trad: 'tres (accent grave)' }, { phrase: 'foret', trad: 'foret (accent circonflexe)' }, { phrase: 'noel', trad: 'noel (trema)' }] }, exercises: [
+                                { type: 'qcm', question: 'Quel accent utilise-t-on uniquement sur le e?', options: ['Accent aigu', 'Accent grave', 'Accent circonflexe', 'Trema'], correct: 0, explanation: 'L\'accent aigu se place exclusivement sur la lettre e.' },
+                                { type: 'fill', question: 'Completez: une ___ (foret)', blank: 'foret', answer: 'foret', hint: 'Utilisez l\'accent circonflexe' },
+                                { type: 'translation', question: 'Traduisez: L\'eleve est tres intelligent.', answer: 'The student is very intelligent.' },
+                                { type: 'pronunciation', phrase: 'Je suis tres heureux d\'etre ici.' }
+                            ] },
+                            { id: 'fr-orth-2', title: 'Les homophones courants', level: 'debutant', content: { intro: 'Les homophones sont des mots qui se prononcent de la meme facon mais s\'ecrivent differemment.', points: ['a (verbe avoir) / a (preposition)', 'ou (conjonction) / ou (adverbe de lieu)', 'son (possessif) / sont (verbe etre)', 'on (pronom) / ont (verbe avoir)'], exemples: [{ phrase: 'Il a faim', trad: 'He is hungry (a = has)' }, { phrase: 'Il va a Paris', trad: 'He goes to Paris (a = to)' }, { phrase: 'Ou vas-tu?', trad: 'Where are you going?' }, { phrase: 'The ou cafe?', trad: 'Tea or coffee?' }] }, exercises: [
+                                { type: 'qcm', question: 'Quelle est la difference entre "ou" et "ou"?', options: ['Conjonction / Lieu', 'Verbe / Nom', 'Adjectif / Adverbe', 'Pronom / Preposition'], correct: 0, explanation: '"Ou" est une conjonction (ou), "ou" est un adverbe de lieu (where).' },
+                                { type: 'fill', question: 'Completez: Ils ___ arrives hier.', blank: 'sont', answer: 'sont', hint: 'Verbe etre' }
+                            ] },
+                            { id: 'fr-orth-3', title: 'Le pluriel des noms', level: 'intermediaire', content: { intro: 'La formation du pluriel en francais suit des regles precises avec plusieurs exceptions.', points: ['Regle generale: ajouter -s', 'Mots en -eu, -au, -eau: ajouter -x', 'Mots en -al: deviennent -aux', 'Exceptions: des bijoux, des cailloux'], exemples: [{ phrase: 'un livre / des livres', trad: 'a book / books' }, { phrase: 'un chateau / des chateaux', trad: 'a castle / castles' }] }, exercises: [
+                                { type: 'qcm', question: 'Quel est le pluriel de "cheval"?', options: ['chevaux', 'chevals', 'cheval', 'chevaus'], correct: 0, explanation: 'Les mots en -al font leur pluriel en -aux: cheval -> chevaux.' }
+                            ] }
+                        ]
+                    },
+                    grammaire: {
+                        name: 'Grammaire',
+                        lessons: [
+                            { id: 'fr-gram-1', title: 'Les articles definis et indefinis', level: 'debutant', content: { intro: 'Les articles accompagnent le nom et indiquent son genre et son nombre.', points: ['Articles definis: le, la, les', 'Articles indefinis: un, une, des', 'Articles partitifs: du, de la', 'Le masculin et le feminin'], exemples: [{ phrase: 'le livre', trad: 'the book (masculin)' }, { phrase: 'la table', trad: 'the table (feminin)' }, { phrase: 'un chat', trad: 'a cat' }] }, exercises: [
+                                { type: 'qcm', question: 'Quel article utiliser pour "maison"?', options: ['la', 'le', 'les', 'un'], correct: 0, explanation: 'Maison est feminin, on utilise "la".' }
+                            ] },
+                            { id: 'fr-gram-2', title: 'Le present de l\'indicatif', level: 'debutant', content: { intro: 'Le present est le temps le plus utilise en francais pour exprimer une action actuelle.', points: ['Verbes du 1er groupe (-er)', 'Verbes du 2e groupe (-ir)', 'Verbes du 3e groupe (irreguliers)', 'Les auxiliaires etre et avoir'], exemples: [{ phrase: 'Je parle francais', trad: 'I speak French' }, { phrase: 'Nous finissons le travail', trad: 'We finish the work' }] }, exercises: [
+                                { type: 'fill', question: 'Completez: Tu ___ (parler) francais.', blank: 'parles', answer: 'parles', hint: 'Terminaison -es pour tu' }
+                            ] }
+                        ]
+                    },
+                    vocabulaire: {
+                        name: 'Vocabulaire',
+                        lessons: [
+                            { id: 'fr-voc-1', title: 'Les salutations', level: 'debutant', content: { intro: 'Maitriser les salutations est la premiere etape pour communiquer en francais.', points: ['Bonjour / Bonsoir', 'Comment allez-vous? / Comment vas-tu?', 'Au revoir / A bientot', 'Enchante / Ravi de vous rencontrer'], exemples: [{ phrase: 'Bonjour, comment allez-vous?', trad: 'Hello, how are you?' }, { phrase: 'Enchante de faire votre connaissance', trad: 'Nice to meet you' }] }, exercises: [
+                                { type: 'qcm', question: 'Comment dit-on "Good evening"?', options: ['Bonsoir', 'Bonjour', 'Bonne nuit', 'Salut'], correct: 0, explanation: 'Bonsoir s\'utilise le soir.' }
+                            ] }
+                        ]
+                    },
+                    conjugaison: {
+                        name: 'Conjugaison',
+                        lessons: [
+                            { id: 'fr-conj-1', title: 'Le verbe etre', level: 'debutant', content: { intro: 'Le verbe etre est l\'un des verbes les plus importants en francais.', points: ['Je suis, Tu es, Il/Elle est', 'Nous sommes, Vous etes, Ils/Elles sont', 'Utilisations: identite, etat, profession'], exemples: [{ phrase: 'Je suis professeur', trad: 'I am a teacher' }, { phrase: 'Ils sont fatiguee', trad: 'They are tired' }] }, exercises: [
+                                { type: 'fill', question: 'Completez: Nous ___ heureux.', blank: 'sommes', answer: 'sommes', hint: 'Conjugaison de etre' }
+                            ] }
+                        ]
+                    },
+                    prononciation: {
+                        name: 'Prononciation',
+                        lessons: [
+                            { id: 'fr-pron-1', title: 'Les sons nasaux', level: 'intermediaire', content: { intro: 'Les voyelles nasales sont caracteristiques de la prononciation francaise.', points: ['Son [ɑ̃]: an, am, en, em', 'Son [ɛ̃]: in, im, ain, aim', 'Son [ɔ̃]: on, om', 'Son [œ̃]: un, um'], exemples: [{ phrase: 'enfant', trad: 'child (son [ɑ̃])' }, { phrase: 'matin', trad: 'morning (son [ɛ̃])' }] }, exercises: [
+                                { type: 'pronunciation', phrase: 'Un bon vin blanc' }
+                            ] }
+                        ]
+                    }
+                }
+            },
+            english: {
+                name: 'English',
+                nativeName: 'English',
+                color: '#dc2626',
+                categories: {
+                    spelling: {
+                        name: 'Spelling',
+                        lessons: [
+                            { id: 'en-spell-1', title: 'Common spelling rules', level: 'debutant', content: { intro: 'English spelling follows patterns that help you write correctly.', points: ['"i" before "e" except after "c"', 'Silent "e" at the end of words', 'Double consonants before -ing', 'Plural forms: -s, -es, -ies'], exemples: [{ phrase: 'receive', trad: 'i before e except after c' }, { phrase: 'make / making', trad: 'silent e dropped before -ing' }] }, exercises: [
+                                { type: 'qcm', question: 'Which is correct?', options: ['receive', 'recieve', 'receve', 'riceive'], correct: 0, explanation: '"i" before "e" except after "c".' }
+                            ] }
+                        ]
+                    },
+                    grammar: {
+                        name: 'Grammar',
+                        lessons: [
+                            { id: 'en-gram-1', title: 'Present Simple vs Continuous', level: 'debutant', content: { intro: 'The present simple and present continuous express different types of actions.', points: ['Present Simple: habits, facts', 'Present Continuous: actions happening now', 'Signal words for each tense', 'Form: do/does vs am/is/are + -ing'], exemples: [{ phrase: 'I work every day', trad: 'Present Simple - routine' }, { phrase: 'I am working now', trad: 'Present Continuous - now' }] }, exercises: [
+                                { type: 'fill', question: 'She ___ (work) at the moment.', blank: 'is working', answer: 'is working', hint: 'Action happening now' }
+                            ] }
+                        ]
+                    },
+                    vocabulary: {
+                        name: 'Vocabulary',
+                        lessons: [
+                            { id: 'en-voc-1', title: 'Greetings and introductions', level: 'debutant', content: { intro: 'Learn essential greetings for everyday conversations.', points: ['Hello / Hi / Hey', 'How are you? / How\'s it going?', 'Nice to meet you', 'Goodbye / See you later'], exemples: [{ phrase: 'How\'s it going?', trad: 'Informal way to ask how someone is' }] }, exercises: [
+                                { type: 'pronunciation', phrase: 'Hello, how are you doing today?' }
+                            ] }
+                        ]
+                    },
+                    tenses: {
+                        name: 'Tenses',
+                        lessons: [
+                            { id: 'en-tense-1', title: 'Past Simple', level: 'intermediaire', content: { intro: 'The past simple expresses completed actions in the past.', points: ['Regular verbs: add -ed', 'Irregular verbs: see/saw, go/went', 'Questions: did + subject + base form', 'Negatives: didn\'t + base form'], exemples: [{ phrase: 'I visited Paris last year', trad: 'Regular verb' }, { phrase: 'She went to school', trad: 'Irregular verb (go/went)' }] }, exercises: [
+                                { type: 'qcm', question: 'What is the past of "buy"?', options: ['bought', 'buyed', 'boughten', 'buying'], correct: 0, explanation: 'Buy is irregular: buy -> bought.' }
+                            ] }
+                        ]
+                    },
+                    pronunciation: {
+                        name: 'Pronunciation',
+                        lessons: [
+                            { id: 'en-pron-1', title: 'The "th" sounds', level: 'debutant', content: { intro: 'The "th" sound is unique to English and requires practice.', points: ['Voiced th: the, this, that', 'Unvoiced th: think, thank, three', 'Tongue position between teeth', 'Common words with th'], exemples: [{ phrase: 'The weather is nice', trad: 'Voiced th in "the" and "weather"' }] }, exercises: [
+                                { type: 'pronunciation', phrase: 'I think this is the best thing.' }
+                            ] }
+                        ]
+                    }
+                }
+            },
+            spanish: {
+                name: 'Spanish',
+                nativeName: 'Espanol',
+                color: '#d97706',
+                categories: {
+                    ortografia: {
+                        name: 'Ortografia',
+                        lessons: [
+                            { id: 'es-ort-1', title: 'El alfabeto y la pronunciacion', level: 'debutant', content: { intro: 'El alfabeto espanol tiene 27 letras con sonidos especificos.', points: ['Las vocales: a, e, i, o, u', 'La letra n con tilde', 'Los digrafos: ch, ll, rr', 'Pronunciacion de la "c" y "z"'], exemples: [{ phrase: 'nino', trad: 'child (n with tilde)' }, { phrase: 'llamar', trad: 'to call (ll sound)' }] }, exercises: [
+                                { type: 'qcm', question: 'Cuantas letras tiene el alfabeto espanol?', options: ['27', '26', '28', '25'], correct: 0, explanation: 'El alfabeto espanol tiene 27 letras.' }
+                            ] }
+                        ]
+                    },
+                    gramatica: {
+                        name: 'Gramatica',
+                        lessons: [
+                            { id: 'es-gram-1', title: 'Ser y Estar', level: 'debutant', content: { intro: 'Los verbos ser y estar significan "to be" pero se usan en contextos diferentes.', points: ['Ser: identidad, caracteristicas permanentes', 'Estar: ubicacion, estados temporales', 'Ser: profesion, nacionalidad', 'Estar: emociones, condiciones'], exemples: [{ phrase: 'Soy profesor', trad: 'I am a teacher (ser - permanent)' }, { phrase: 'Estoy cansado', trad: 'I am tired (estar - temporary)' }] }, exercises: [
+                                { type: 'fill', question: 'Ella ___ (ser/estar) en casa ahora.', blank: 'esta', answer: 'esta', hint: 'Ubicacion temporal' }
+                            ] }
+                        ]
+                    },
+                    vocabulario: {
+                        name: 'Vocabulario',
+                        lessons: [
+                            { id: 'es-voc-1', title: 'Saludos y presentaciones', level: 'debutant', content: { intro: 'Los saludos son fundamentales para iniciar cualquier conversacion.', points: ['Hola / Buenos dia
